@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="UTF-8"><title>打卡</title></head>
+<body>
+<h2>欢迎，{{ user }}</h2>
+<button onclick="record('上班打卡')">上班打卡</button>
+<button onclick="record('午餐开始')">午餐开始</button>
+<button onclick="record('午餐结束')">午餐结束</button>
+<button onclick="record('下班打卡')">下班打卡</button>
+<button onclick="record('加班开始')">加班开始</button>
+<button onclick="record('加班结束')">加班结束</button>
+<br><br><a href="/logout">登出</a>
+<script>
+function record(type) {
+  fetch('/api/attendance', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({type})
+  }).then(res => res.json()).then(data => alert(data.message));
+}
+</script></body></html>
