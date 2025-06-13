@@ -1,7 +1,7 @@
+import os
 from flask import Flask, render_template, request, jsonify, redirect, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import os
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key'
@@ -15,6 +15,12 @@ class Attendance(db.Model):
     username = db.Column(db.String(50))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     type = db.Column(db.String(50))
+
+# ✅ 只在首次运行时自动创建数据库文件
+@app.before_first_request
+def create_tables():
+    if not os.path.exists("app.db"):
+        db.create_all()
 
 @app.route('/')
 def home():
@@ -37,7 +43,4 @@ def record_attendance():
     return jsonify({"message": f"{data['type']} 打卡成功"})
 
 if __name__ == '__main__':
-    os.makedirs('database', exist_ok=True)
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True, host='0.0.0.0', port=10000)
+    app.run(debug=True)
