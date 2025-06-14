@@ -1,1 +1,44 @@
-<h1>欢迎 {{ username }}</h1>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>员工打卡系统</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>员工打卡系统</h1>
+        <div class="welcome">欢迎, {{ username }} <a href="/logout">退出</a></div>
+        <div class="clock" id="clock"></div>
+        <div class="buttons">
+            <button class="btn green" onclick="punch('上班打卡')">上班打卡</button>
+            <button class="btn orange" onclick="punch('午餐开始')">午餐开始</button>
+            <button class="btn orange" onclick="punch('午餐结束')">午餐结束</button>
+            <button class="btn red" onclick="punch('下班打卡')">下班打卡</button>
+            <button class="btn purple" onclick="punch('加班开始')">加班开始</button>
+            <button class="btn purple" onclick="punch('加班结束')">加班结束</button>
+        </div>
+        <div id="message" class="message"></div>
+    </div>
+    <script>
+        function updateClock() {
+            const now = new Date();
+            document.getElementById("clock").innerText = now.toLocaleString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function punch(type) {
+            fetch('/api/attendance', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type})
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("message").innerText = data.message || data.error;
+            });
+        }
+    </script>
+</body>
+</html>
