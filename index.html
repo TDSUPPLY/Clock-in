@@ -1,45 +1,24 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>打卡系统</title>
-    <style>
-        body { background:#1d1f2f; color:#fff; font-family:sans-serif; text-align:center; padding:30px; }
-        button { font-size:18px; margin:10px; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; }
-        .green { background:#2ecc71; color:white; }
-        .orange { background:#f39c12; color:white; }
-        .red { background:#e74c3c; color:white; }
-        .purple { background:#8e44ad; color:white; }
-    </style>
+    <meta charset="UTF-8">
+    <title>Clock In</title>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <h1>员工打卡系统</h1>
-    <p>欢迎, {{ username }}</p>
-    <form action="/logout"><button class="red">退出</button></form>
-    <h2 id="clock"></h2>
-    <button class="green" onclick="clock('上班打卡')">🟢 上班打卡</button>
-    <button class="orange" onclick="clock('午餐开始')">🟧 午餐开始</button><br>
-    <button class="orange" onclick="clock('午餐结束')">🟧 午餐结束</button>
-    <button class="red" onclick="clock('下班打卡')">🔴 下班打卡</button><br>
-    <button class="purple" onclick="clock('加班开始')">🟣 加班开始</button>
-    <button class="purple" onclick="clock('加班结束')">🟣 加班结束</button><br><br>
-    <a href="/download" style="color:lightblue;">导出记录</a>
-    <script>
-        function clock(type){
-            fetch('/api/attendance', {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({type:type})
-            }).then(res => res.json()).then(data => alert(data.message));
-        }
-        function updateClock(){
-            const now = new Date();
-            document.getElementById("clock").innerText =
-                now.getHours().toString().padStart(2,'0') + ':' +
-                now.getMinutes().toString().padStart(2,'0') + ':' +
-                now.getSeconds().toString().padStart(2,'0');
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-    </script>
+    <h2>Welcome, {{ username }}</h2>
+    <button onclick="clockIn('上班打卡')">🟢 上班打卡</button>
+    <button onclick="clockIn('午餐开始')">🟧 午餐开始</button>
+    <button onclick="clockIn('午餐结束')">🟧 午餐结束</button>
+    <button onclick="clockIn('下班打卡')">🔴 下班打卡</button>
+    <button onclick="clockIn('加班开始')">🟣 加班开始</button>
+    <button onclick="clockIn('加班结束')">🟣 加班结束</button>
+    <button onclick="window.location.href='/logout'">退出</button>
+    <br><br>
+    <form action="/export" method="get">
+        <button type="submit">导出记录</button>
+    </form>
+    <script src="/static/js/script.js"></script>
 </body>
 </html>

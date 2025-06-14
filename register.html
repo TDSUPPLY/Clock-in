@@ -1,56 +1,17 @@
 
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>注册账号</title>
-    <style>
-        body {
-            background: #1a1a2e;
-            color: white;
-            font-family: Arial, sans-serif;
-            display: flex;
-            height: 100vh;
-            justify-content: center;
-            align-items: center;
-        }
-        .container {
-            background: #16213e;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px #0f3460;
-        }
-        input {
-            display: block;
-            margin: 10px 0;
-            padding: 10px;
-            width: 100%;
-            border-radius: 5px;
-            border: none;
-        }
-        button {
-            padding: 10px;
-            width: 100%;
-            background-color: #0f3460;
-            border: none;
-            color: white;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #e94560;
-        }
-    </style>
+    <title>Register</title>
 </head>
 <body>
-    <div class="container">
-        <h2>注册账号</h2>
-        <form method="post" action="/register">
-            <input type="text" name="username" placeholder="用户名" required>
-            <input type="password" name="password" placeholder="密码" required>
-            <button type="submit">注册</button>
-        </form>
-    </div>
+    <h2>注册</h2>
+    <form action="/register" method="post">
+        用户名: <input type="text" name="username"><br>
+        密码: <input type="password" name="password"><br>
+        <button type="submit">注册</button>
+    </form>
+    <p>已有账号？<a href="/login">点击登录</a></p>
 </body>
 </html>

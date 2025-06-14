@@ -1,14 +1,17 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>登录</title>
+    <meta charset="UTF-8">
+    <title>Login</title>
 </head>
-<body style="text-align:center; font-family:sans-serif; margin-top:50px;">
-    <h2>登录打卡系统</h2>
-    <form method="post">
-        <input name="username" placeholder="输入姓名" required>
-        <button type="submit">进入</button>
+<body>
+    <h2>登录</h2>
+    <form action="/login" method="post">
+        用户名: <input type="text" name="username"><br>
+        密码: <input type="password" name="password"><br>
+        <button type="submit">登录</button>
     </form>
+    <p>没有账号？<a href="/register">点击注册</a></p>
 </body>
 </html>
