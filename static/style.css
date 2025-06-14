@@ -36,3 +36,15 @@ body {
     font-size: 18px;
     color: #00e0ff;
 }
+
+.btn-group {
+    display: inline-block;
+    text-align: center;
+    margin: 10px;
+}
+
+.btn-time {
+    font-size: 13px;
+    color: #bbb;
+    margin-bottom: 5px;
+}
