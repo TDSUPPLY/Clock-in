@@ -1,13 +1,57 @@
-
 <!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
     <title>打卡系统</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; }
-        button { margin: 10px; padding: 10px 20px; font-size: 16px; }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #0f0;
+        }
+
+        button {
+            margin: 10px;
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #111;
+            color: #0f0;
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0f0;
+            color: #000;
+        }
+
+        a {
+            color: #0f0;
+            text-decoration: none;
+        }
+
+        .reminder-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #000;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 8px;
+            z-index: 9999;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            font-size: 16px;
+            font-weight: bold;
+        }
     </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="{{ url_for('static', filename='reminder.js') }}"></script>
     <script>
         function clock(type) {
             fetch('/api/attendance', {
@@ -18,19 +62,6 @@
             .then(res => res.json())
             .then(data => alert(data.message))
             .catch(err => alert('打卡失败'));
-        }
-        window.onload = function () {
-            const reminders = {
-                "09:00": "记得打卡啦！上班打卡开始。",
-                "12:00": "午餐时间到啦！记得打卡午餐开始。",
-                "12:30": "午餐结束，记得打卡返回工作状态。",
-                "17:30": "下班时间到，记得打卡啦！",
-            };
-            setInterval(() => {
-                const now = new Date();
-                const hm = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-                if (reminders[hm]) alert(reminders[hm]);
-            }, 60000);
         }
     </script>
 </head>
@@ -44,6 +75,6 @@
         <button onclick="clock('加班开始')">加班开始</button>
         <button onclick="clock('加班结束')">加班结束</button>
     </div>
-    <p><a href="/logout" style="color:#0f0">退出登录</a></p>
+    <p><a href="/logout">退出登录</a></p>
 </body>
 </html>
