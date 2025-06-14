@@ -1,1 +1,4 @@
-/* custom styles */
+
+body { background: #111; color: #fff; text-align: center; font-family: sans-serif; }
+button { margin: 10px; padding: 10px; font-size: 18px; }
+#clock { font-size: 32px; margin: 20px; }
