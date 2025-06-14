@@ -1,4 +1,3 @@
-<h2>Welcome to Clock-in System</h2>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,8 +8,11 @@
 <body class="bg-light text-center py-5">
   <div class="container">
     <h1 class="mb-4">👋 Welcome, {{ session['username'] }}</h1>
-    <button onclick="clockIn('in')" class="btn btn-success me-2">Clock In</button>
-    <button onclick="clockIn('out')" class="btn btn-danger">Clock Out</button>
+    <button onclick="clockIn('in')" class="btn btn-success me-2">🟢 Clock In</button>
+    <button onclick="clockIn('out')" class="btn btn-danger">🔴 Clock Out</button>
+    <div class="mt-4">
+      <a href="/logout" class="text-muted">Logout</a>
+    </div>
   </div>
 
   <script>
@@ -18,7 +20,7 @@
       fetch('/api/attendance', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({type})
+        body: JSON.stringify({ type })
       })
       .then(res => res.json())
       .then(data => alert(data.message));
