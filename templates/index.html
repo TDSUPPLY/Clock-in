@@ -1,32 +1,85 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
-    <title>打卡系统</title>
+    <meta charset="UTF-8">
+    <title>员工打卡系统</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            font-family: "Segoe UI", sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 50px;
+        }
+        .container {
+            background: #111;
+            padding: 30px 50px;
+            border-radius: 20px;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        .clock {
+            font-size: 2.5em;
+            color: #3daaff;
+            margin: 20px 0;
+        }
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            justify-items: center;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            color: white;
+            cursor: pointer;
+            width: 160px;
+        }
+        .green { background-color: #28a745; }
+        .orange { background-color: #fd7e14; }
+        .red { background-color: #dc3545; }
+        .purple { background-color: #6f42c1; }
+    </style>
 </head>
 <body>
-    <h2>欢迎 {{ username }}</h2>
-    <button onclick="mark('上班打卡')">🟢 上班打卡</button>
-    <button onclick="mark('午餐开始')">🟧 午餐开始</button>
-    <button onclick="mark('午餐结束')">🟧 午餐结束</button>
-    <button onclick="mark('下班打卡')">🔴 下班打卡</button>
-    <button onclick="mark('加班开始')">🟣 加班开始</button>
-    <button onclick="mark('加班结束')">🟣 加班结束</button>
-    <button onclick="window.location='/export'">📤 导出记录</button>
-    <button onclick="window.location='/logout'">退出</button>
-    <p id="msg"></p>
-    <script>
-        function mark(type) {
-            fetch('/api/attendance', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({type})
-            })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('msg').innerText = data.message;
-            });
-        }
-    </script>
+<div class="container">
+    <h1>员工打卡系统</h1>
+    <div>欢迎，td01</div>
+    <button onclick="logout()">退出</button>
+    <div class="clock" id="clock"></div>
+    <div class="btn-group">
+        <button class="green">上班打卡</button>
+        <button class="orange">午餐开始</button>
+        <button class="orange">午餐结束</button>
+        <button class="red">下班打卡</button>
+        <button class="purple">加班开始</button>
+        <button class="purple">加班结束</button>
+    </div>
+</div>
+<script>
+function updateClock() {
+    const now = new Date();
+    const str = now.getFullYear() + "/" +
+                String(now.getMonth() + 1).padStart(2, '0') + "/" +
+                String(now.getDate()).padStart(2, '0') + " " +
+                String(now.getHours()).padStart(2, '0') + ":" +
+                String(now.getMinutes()).padStart(2, '0') + ":" +
+                String(now.getSeconds()).padStart(2, '0');
+    document.getElementById("clock").innerText = str;
+}
+setInterval(updateClock, 1000);
+updateClock();
+function logout() {
+    window.location.href = "/logout";
+}
+</script>
 </body>
 </html>
