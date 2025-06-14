@@ -1,94 +1,19 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>员工打卡系统</title>
-  <style>
-    body {
-      background: linear-gradient(to bottom right, #2b2d77, #32165e);
-      color: white;
-      font-family: 'Arial', sans-serif;
-      text-align: center;
-      padding: 30px;
-    }
-    .container {
-      background-color: #111;
-      padding: 30px;
-      border-radius: 20px;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-    .time {
-      font-size: 36px;
-      color: #58a6ff;
-      margin: 20px 0;
-    }
-    .btn {
-      width: 45%;
-      padding: 15px;
-      margin: 10px;
-      font-size: 18px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    .green { background-color: #2ecc71; }
-    .orange { background-color: #e67e22; }
-    .red { background-color: #e74c3c; }
-    .purple { background-color: #8e44ad; }
-    .logout {
-      margin-top: 10px;
-    }
-    .logout button {
-      background-color: #34495e;
-      color: white;
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-  </style>
+    <title>考勤系统</title>
 </head>
 <body>
-  <div class="container">
-    <h1>员工打卡系统</h1>
-    <div>
-      欢迎, {{ session['username'] }}
-      <form action="/logout" method="get" class="logout">
-        <button type="submit">退出</button>
-      </form>
-    </div>
-    <div class="time" id="clock">--:--:--</div>
-    <div>
-      <button class="btn green" onclick="record('上班打卡')">🟢 上班打卡</button>
-      <button class="btn orange" onclick="record('午餐开始')">🟧 午餐开始</button>
-      <button class="btn orange" onclick="record('午餐结束')">🟧 午餐结束</button>
-      <button class="btn red" onclick="record('下班打卡')">🔴 下班打卡</button>
-      <button class="btn purple" onclick="record('加班开始')">🟣 加班开始</button>
-      <button class="btn purple" onclick="record('加班结束')">🟣 加班结束</button>
-    </div>
-  </div>
-
-  <script>
-    function record(type) {
-      fetch('/api/attendance', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({type: type})
-      })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => alert("打卡失败：" + error));
-    }
-
-    function updateClock() {
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false });
-      document.getElementById('clock').innerText = timeStr;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-  </script>
+    <h2>欢迎 {{ username }}</h2>
+    <form action="/api/attendance" method="post">
+        <button type="submit" name="action" value="上班打卡">🟢 上班打卡</button>
+        <button type="submit" name="action" value="午餐开始">🟧 午餐开始</button>
+        <button type="submit" name="action" value="午餐结束">🟧 午餐结束</button>
+        <button type="submit" name="action" value="下班打卡">🔴 下班打卡</button>
+        <button type="submit" name="action" value="加班开始">🟣 加班开始</button>
+        <button type="submit" name="action" value="加班结束">🟣 加班结束</button>
+    </form>
+    <br>
+    <a href="/logout">登出</a>
 </body>
 </html>
