@@ -1,80 +1,112 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <title>打卡系统</title>
-    <style>
-        body {
-            background: #000;
-            color: #fff;
-            font-family: sans-serif;
-            padding: 20px;
-        }
+  <meta charset="UTF-8">
+  <title>员工打卡系统</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC&display=swap">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      color: #fff;
+      font-family: 'Noto Sans SC', sans-serif;
+      text-align: center;
+    }
 
-        h2 {
-            color: #0f0;
-        }
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: #111;
+      padding: 30px;
+      border-radius: 12px;
+    }
 
-        button {
-            margin: 10px;
-            padding: 12px 24px;
-            font-size: 16px;
-            background-color: #111;
-            color: #0f0;
-            border: 1px solid #0f0;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+    h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
 
-        button:hover {
-            background-color: #0f0;
-            color: #000;
-        }
+    .username {
+      margin: 10px 0;
+    }
 
-        a {
-            color: #0f0;
-            text-decoration: none;
-        }
+    .time {
+      font-size: 24px;
+      margin: 20px 0;
+    }
 
-        .reminder-popup {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: #000;
-            color: #fff;
-            padding: 12px 18px;
-            border-radius: 8px;
-            z-index: 9999;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-            font-size: 16px;
-            font-weight: bold;
-        }
-    </style>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="{{ url_for('static', filename='reminder.js') }}"></script>
-    <script>
-        function clock(type) {
-            fetch('/api/attendance', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type })
-            })
-            .then(res => res.json())
-            .then(data => alert(data.message))
-            .catch(err => alert('打卡失败'));
-        }
-    </script>
+    button {
+      padding: 14px 28px;
+      margin: 10px;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .btn-green { background-color: #2ecc71; }
+    .btn-orange { background-color: #f39c12; }
+    .btn-red { background-color: #e74c3c; }
+    .btn-purple { background-color: #9b59b6; }
+
+    .btn-green:hover { background-color: #27ae60; }
+    .btn-orange:hover { background-color: #d35400; }
+    .btn-red:hover { background-color: #c0392b; }
+    .btn-purple:hover { background-color: #8e44ad; }
+
+    a.logout {
+      display: inline-block;
+      margin-top: 20px;
+      color: #0f0;
+      text-decoration: none;
+    }
+
+    a.logout:hover {
+      text-decoration: underline;
+    }
+  </style>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="{{ url_for('static', filename='reminder.js') }}"></script>
+  <script>
+    function clock(type) {
+      fetch('/api/attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type })
+      })
+      .then(res => res.json())
+      .then(data => alert(data.message))
+      .catch(() => alert('打卡失败'));
+    }
+
+    function updateClock() {
+      const now = new Date();
+      const timeStr = now.getFullYear() + "/" + (now.getMonth() + 1) + "/" + now.getDate()
+        + " " + now.toTimeString().split(' ')[0];
+      document.getElementById('clock-display').innerText = timeStr;
+    }
+
+    setInterval(updateClock, 1000);
+    window.onload = updateClock;
+  </script>
 </head>
 <body>
-    <h2>欢迎, {{ username }}</h2>
+  <div class="container">
+    <h1>员工打卡系统</h1>
+    <div class="username">欢迎, {{ username }} <a href="/logout" class="logout">退出</a></div>
+    <div class="time" id="clock-display">加载中...</div>
+
     <div>
-        <button onclick="clock('上班打卡')">上班打卡</button>
-        <button onclick="clock('午餐开始')">午餐开始</button>
-        <button onclick="clock('午餐结束')">午餐结束</button>
-        <button onclick="clock('下班打卡')">下班打卡</button>
-        <button onclick="clock('加班开始')">加班开始</button>
-        <button onclick="clock('加班结束')">加班结束</button>
+      <button class="btn-green" onclick="clock('上班打卡')">上班打卡</button>
+      <button class="btn-orange" onclick="clock('午餐开始')">午餐开始</button>
+      <button class="btn-orange" onclick="clock('午餐结束')">午餐结束</button>
+      <button class="btn-red" onclick="clock('下班打卡')">下班打卡</button>
+      <button class="btn-purple" onclick="clock('加班开始')">加班开始</button>
+      <button class="btn-purple" onclick="clock('加班结束')">加班结束</button>
     </div>
-    <p><a href="/logout">退出登录</a></p>
+  </div>
 </body>
 </html>
