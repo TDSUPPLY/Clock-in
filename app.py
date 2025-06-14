@@ -55,17 +55,21 @@ def logout():
     session.clear()
     return redirect('/login')
 
+def malaysia_now():
+    return datetime.utcnow() + timedelta(hours=8)
+
 @app.route('/api/attendance', methods=['POST'])
 def attendance():
     if 'username' not in session:
         return jsonify({"error": "未登录"}), 401
     data = request.get_json()
     type = data['type']
-    today = datetime.now().strftime('%Y-%m-%d')
+    now = malaysia_now()
+    today = now.strftime('%Y-%m-%d')
     exists = Attendance.query.filter_by(username=session['username'], type=type, date=today).first()
     if exists:
         return jsonify({"message": f"{type} 已打卡"})
-    record = Attendance(username=session['username'], type=type, date=today)
+    record = Attendance(username=session['username'], type=type, date=today, timestamp=now)
     db.session.add(record)
     db.session.commit()
     return jsonify({"message": f"{type} 打卡成功"})
@@ -87,7 +91,7 @@ def export():
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['日期', '用户名', '上班时间', '下班时间', '上班时长', '午餐开始', '午餐结束', '午餐时长', '加班开始', '加班结束', '加班时长'])
+    writer.writerow([entry.id, entry.username, entry.type, entry.timestamp.strftime('%Y-%m-%d %H:%M:%S')])
 
     def calc_hours(start, end):
         from datetime import datetime
