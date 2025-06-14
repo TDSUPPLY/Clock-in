@@ -1,24 +1,68 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>员工打卡系统</title>
-  <link rel="stylesheet" href="/static/style.css">
-  <script src="/static/script.js" defer></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(to bottom right, #23267B, #3C1C8B);
+      color: white;
+      text-align: center;
+      padding-top: 30px;
+    }
+    .container {
+      background-color: #111;
+      padding: 30px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+    .btn-group button {
+      padding: 10px 30px;
+      margin: 10px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+    }
+    .green { background-color: #2e8b57; }
+    .orange { background-color: #ff8c00; }
+    .red { background-color: #c0392b; }
+    .purple { background-color: #8e44ad; }
+    .logout { background-color: #444; padding: 5px 15px; border-radius: 8px; }
+  </style>
 </head>
 <body>
-  <h1>员工打卡系统</h1>
-  <div id="welcome">欢迎, {{ username }}</div>
-  <button onclick="logout()">退出</button>
-  <div id="clock">{{ time }}</div>
-  <div id="buttons">
-    <button onclick="clockIn('上班打卡')">🟢 上班打卡</button>
-    <button onclick="clockIn('午餐开始')">🟧 午餐开始</button>
-    <button onclick="clockIn('午餐结束')">🟧 午餐结束</button>
-    <button onclick="clockIn('下班打卡')">🔴 下班打卡</button>
-    <button onclick="clockIn('加班开始')">🟣 加班开始</button>
-    <button onclick="clockIn('加班结束')">🟣 加班结束</button>
+  <div class="container">
+    <h1>员工打卡系统</h1>
+    <div style="background:#000;padding:10px;border-radius:10px;margin-bottom:20px;">
+      欢迎, {{ username }} <a href="/logout" class="logout">退出</a>
+    </div>
+    <h2 id="clock"></h2>
+    <div class="btn-group">
+      <button class="green" onclick="submit('上班打卡')">上班打卡</button>
+      <button class="orange" onclick="submit('午餐开始')">午餐开始</button>
+      <button class="orange" onclick="submit('午餐结束')">午餐结束</button>
+      <button class="red" onclick="submit('下班打卡')">下班打卡</button>
+      <button class="purple" onclick="submit('加班开始')">加班开始</button>
+      <button class="purple" onclick="submit('加班结束')">加班结束</button>
+    </div>
   </div>
-  <a href="/export">📥 导出记录</a>
+  <script>
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').innerText = now.toLocaleString('zh-CN', { hour12: false });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+    function submit(type) {
+      fetch('/api/attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: type })
+      }).then(res => res.json()).then(data => alert(data.message));
+    }
+  </script>
 </body>
 </html>
