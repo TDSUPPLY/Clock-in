@@ -1,1 +1,24 @@
-<h1>欢迎 {{ username }}</h1>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>员工打卡系统</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/script.js" defer></script>
+</head>
+<body>
+  <h1>员工打卡系统</h1>
+  <div id="welcome">欢迎, {{ username }}</div>
+  <button onclick="logout()">退出</button>
+  <div id="clock">{{ time }}</div>
+  <div id="buttons">
+    <button onclick="clockIn('上班打卡')">🟢 上班打卡</button>
+    <button onclick="clockIn('午餐开始')">🟧 午餐开始</button>
+    <button onclick="clockIn('午餐结束')">🟧 午餐结束</button>
+    <button onclick="clockIn('下班打卡')">🔴 下班打卡</button>
+    <button onclick="clockIn('加班开始')">🟣 加班开始</button>
+    <button onclick="clockIn('加班结束')">🟣 加班结束</button>
+  </div>
+  <a href="/export">📥 导出记录</a>
+</body>
+</html>
