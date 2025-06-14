@@ -1,38 +1,35 @@
+
 body {
     background-color: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+a, button {
+    background-color: #28a745;
     color: white;
-    font-family: "Microsoft Yahei", sans-serif;
-    text-align: center;
-    margin-top: 40px;
-}
-.container {
-    background-color: #111;
-    padding: 30px;
-    border-radius: 10px;
-    display: inline-block;
-}
-.clock {
-    font-size: 24px;
-    margin: 20px 0;
-}
-.buttons {
-    margin-top: 20px;
-}
-.btn {
-    margin: 5px;
-    padding: 12px 20px;
-    border: none;
+    padding: 6px 12px;
+    text-decoration: none;
     border-radius: 5px;
-    color: white;
-    font-size: 16px;
+    border: none;
     cursor: pointer;
 }
-.green { background-color: #2ecc71; }
-.orange { background-color: #e67e22; }
-.red { background-color: #e74c3c; }
-.purple { background-color: #9b59b6; }
-.message {
+a:hover, button:hover {
+    background-color: #218838;
+}
+input[type="text"], input[type="password"] {
+    padding: 6px;
+    margin: 4px 0;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
     margin-top: 20px;
-    font-size: 18px;
-    color: #00e0ff;
+}
+th, td {
+    border: 1px solid #555;
+    padding: 8px;
+    text-align: center;
 }
