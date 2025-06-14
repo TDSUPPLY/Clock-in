@@ -86,35 +86,74 @@ def export():
         grouped[key][r.type] = r.timestamp.strftime('%H:%M:%S')
 
     def calc_hours(start, end):
-        fmt = '%H:%M:%S'
-        try:
-            delta = datetime.strptime(end, fmt) - datetime.strptime(start, fmt)
-            return round(delta.total_seconds() / 3600, 2)
-        except:
-            return ''
+    fmt = '%H:%M:%S'
+    try:
+        delta = datetime.strptime(end, fmt) - datetime.strptime(start, fmt)
+        return round(delta.total_seconds() / 3600, 2)  # 小时（保留两位）
+    except:
+        return ''
 
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(['日期', '用户名', '上班时间', '下班时间', '上班时长', '午餐开始', '午餐结束', '午餐时长', '加班开始', '加班结束', '加班时长'])
+def calc_late_minutes(actual_time, expected_time='09:00:00'):
+    try:
+        actual = datetime.strptime(actual_time, '%H:%M:%S')
+        expected = datetime.strptime(expected_time, '%H:%M:%S')
+        delta = actual - expected
+        return max(round(delta.total_seconds() / 60), 0)
+    except:
+        return 0
 
-    for (username, date), types in grouped.items():
-        上班 = types.get('上班打卡', '')
-        下班 = types.get('下班打卡', '')
-        午餐开始 = types.get('午餐开始', '')
-        午餐结束 = types.get('午餐结束', '')
-        加班开始 = types.get('加班开始', '')
-        加班结束 = types.get('加班结束', '')
+def calc_early_leave_minutes(actual_time, expected_time='17:30:00'):
+    try:
+        actual = datetime.strptime(actual_time, '%H:%M:%S')
+        expected = datetime.strptime(expected_time, '%H:%M:%S')
+        delta = expected - actual
+        return max(round(delta.total_seconds() / 60), 0)
+    except:
+        return 0
 
-        writer.writerow([
-            date, username, 上班, 下班, calc_hours(上班, 下班) if 上班 and 下班 else '',
-            午餐开始, 午餐结束, calc_hours(午餐开始, 午餐结束) if 午餐开始 and 午餐结束 else '',
-            加班开始, 加班结束, calc_hours(加班开始, 加班结束) if 加班开始 and 加班结束 else ''
-        ])
-    output.seek(0)
-    return send_file(io.BytesIO(output.getvalue().encode()),
-                     mimetype='text/csv',
-                     as_attachment=True,
-                     download_name='打卡记录汇总.csv')
+output = io.StringIO()
+writer = csv.writer(output)
+writer.writerow(['日期', '用户名', '上班时间', '下班时间', '午餐开始', '午餐结束',
+                 '总工作时长(h)', '午餐时长(h)', '加班时长(h)', 
+                 '迟到时间(min)', '早退时间(min)', '异常次数'])
+
+for (username, date), types in grouped.items():
+    上班 = types.get('上班打卡', '')
+    下班 = types.get('下班打卡', '')
+    午餐开始 = types.get('午餐开始', '')
+    午餐结束 = types.get('午餐结束', '')
+    加班开始 = types.get('加班开始', '')
+    加班结束 = types.get('加班结束', '')
+
+    # 时长计算
+    work_hours = calc_hours(上班, 下班)
+    lunch_hours = calc_hours(午餐开始, 午餐结束)
+    overtime_hours = calc_hours(加班开始, 加班结束)
+
+    # 扣除午餐的实际工作时长
+    total_work_hours = round((work_hours or 0) - (lunch_hours or 0.5), 2) if work_hours else ''
+
+    # 迟到 / 早退
+    late_minutes = calc_late_minutes(上班)
+    early_minutes = calc_early_leave_minutes(下班)
+
+    # 异常判断（每一项 ≥1 分钟记一次）
+    exception_count = 0
+    if late_minutes >= 1: exception_count += 1
+    if early_minutes >= 1: exception_count += 1
+    if not 上班 or not 下班: exception_count += 1
+
+    writer.writerow([
+        date, username, 上班, 下班, 午餐开始, 午餐结束,
+        total_work_hours, lunch_hours, overtime_hours,
+        late_minutes, early_minutes, exception_count
+    ])
+
+output.seek(0)
+return send_file(io.BytesIO(output.getvalue().encode('utf-8-sig')),
+                 mimetype='text/csv',
+                 as_attachment=True,
+                 download_name='打卡记录统计.csv')
 
 if __name__ == '__main__':
     with app.app_context():
