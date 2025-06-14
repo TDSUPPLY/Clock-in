@@ -1,82 +1,73 @@
 
-from flask import Flask, render_template, request, redirect, session, send_file
+import os
+from flask import Flask, render_template, request, jsonify, redirect, session, send_file
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import csv
-import io
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///clockin.db'
-db = SQLAlchemy(app)
+app.secret_key = 'your-secret-key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(80), nullable=False)
+db = SQLAlchemy(app)
 
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80))
-    type = db.Column(db.String(80))
+    username = db.Column(db.String(50))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    type = db.Column(db.String(50))
 
 @app.route('/')
-def index():
-    if 'username' in session:
-        return render_template('index.html', username=session['username'])
-    return redirect('/login')
+def home():
+    if 'username' not in session:
+        return redirect('/login')
+    return render_template('index.html', username=session['username'])
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        user = User.query.filter_by(username=request.form['username'], password=request.form['password']).first()
-        if user:
-            session['username'] = user.username
-            return redirect('/')
+        username = request.form.get('username')
+        session['username'] = username
+        return redirect('/')
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        if not User.query.filter_by(username=request.form['username']).first():
-            user = User(username=request.form['username'], password=request.form['password'])
-            db.session.add(user)
-            db.session.commit()
-            session['username'] = user.username
-            return redirect('/')
+        username = request.form.get('username')
+        session['username'] = username
+        return redirect('/')
     return render_template('register.html')
 
 @app.route('/logout')
 def logout():
-    session.pop('username', None)
+    session.clear()
     return redirect('/login')
 
 @app.route('/api/attendance', methods=['POST'])
-def clock_in():
-    if 'username' not in session:
-        return "Unauthorized", 401
+def record_attendance():
     data = request.get_json()
-    exists = Attendance.query.filter_by(username=session['username'], type=data['type']).first()
-    if exists:
-        return "Already clocked", 400
-    record = Attendance(username=session['username'], type=data['type'])
-    db.session.add(record)
+    username = session.get('username', 'unknown')
+    existing = Attendance.query.filter_by(username=username, type=data['type']).first()
+    if existing:
+        return jsonify({"message": f"{data['type']} 已打卡"})
+    entry = Attendance(username=username, type=data['type'])
+    db.session.add(entry)
     db.session.commit()
-    return "Success"
+    return jsonify({"message": f"{data['type']} 打卡成功"})
 
 @app.route('/export')
 def export():
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(['ID', '用户名', '打卡类型', '时间'])
-    for row in Attendance.query.all():
-        writer.writerow([row.id, row.username, row.type, row.timestamp])
-    output.seek(0)
-    return send_file(io.BytesIO(output.getvalue().encode()), mimetype='text/csv',
-                     download_name='clockin_records.csv', as_attachment=True)
+    records = Attendance.query.all()
+    output = "ID,Username,Time,Type\n"
+    for r in records:
+        output += f"{r.id},{r.username},{r.timestamp},{r.type}\n"
+    with open("attendance.csv", "w", encoding="utf-8") as f:
+        f.write(output)
+    return send_file("attendance.csv", as_attachment=True)
 
 if __name__ == '__main__':
-    import os
+    with app.app_context():
+        db.create_all()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)

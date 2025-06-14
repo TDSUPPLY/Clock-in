@@ -1,24 +1,32 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Clock In</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <title>打卡系统</title>
 </head>
 <body>
-    <h2>Welcome, {{ username }}</h2>
-    <button onclick="clockIn('上班打卡')">🟢 上班打卡</button>
-    <button onclick="clockIn('午餐开始')">🟧 午餐开始</button>
-    <button onclick="clockIn('午餐结束')">🟧 午餐结束</button>
-    <button onclick="clockIn('下班打卡')">🔴 下班打卡</button>
-    <button onclick="clockIn('加班开始')">🟣 加班开始</button>
-    <button onclick="clockIn('加班结束')">🟣 加班结束</button>
-    <button onclick="window.location.href='/logout'">退出</button>
-    <br><br>
-    <form action="/export" method="get">
-        <button type="submit">导出记录</button>
-    </form>
-    <script src="/static/js/script.js"></script>
+    <h2>欢迎 {{ username }}</h2>
+    <button onclick="mark('上班打卡')">🟢 上班打卡</button>
+    <button onclick="mark('午餐开始')">🟧 午餐开始</button>
+    <button onclick="mark('午餐结束')">🟧 午餐结束</button>
+    <button onclick="mark('下班打卡')">🔴 下班打卡</button>
+    <button onclick="mark('加班开始')">🟣 加班开始</button>
+    <button onclick="mark('加班结束')">🟣 加班结束</button>
+    <button onclick="window.location='/export'">📤 导出记录</button>
+    <button onclick="window.location='/logout'">退出</button>
+    <p id="msg"></p>
+    <script>
+        function mark(type) {
+            fetch('/api/attendance', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type})
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('msg').innerText = data.message;
+            });
+        }
+    </script>
 </body>
 </html>
