@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, session, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
@@ -10,7 +9,6 @@ app = Flask(__name__)
 app.secret_key = 'secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///attendance.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy(app)
 
 class User(db.Model):
@@ -76,33 +74,28 @@ def attendance():
     db.session.commit()
     return jsonify({"message": f"{type} 打卡成功"})
 
-def calc_hours(start, end):
-    fmt = '%H:%M:%S'
-    try:
-        delta = datetime.strptime(end, fmt) - datetime.strptime(start, fmt)
-        return round(delta.total_seconds() / 3600, 2)
-    except:
-        return ''
-
 @app.route('/export')
 def export():
     if 'username' not in session:
         return redirect('/login')
 
     records = Attendance.query.order_by(Attendance.username, Attendance.date, Attendance.timestamp).all()
-
     grouped = defaultdict(dict)
     for r in records:
         key = (r.username, r.date)
         grouped[key][r.type] = r.timestamp.strftime('%H:%M:%S')
 
+    def calc_hours(start, end):
+        fmt = '%H:%M:%S'
+        try:
+            delta = datetime.strptime(end, fmt) - datetime.strptime(start, fmt)
+            return round(delta.total_seconds() / 3600, 2)
+        except:
+            return ''
+
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow([
-        '日期', '用户名', '上班时间', '下班时间', '上班时长',
-        '午餐开始', '午餐结束', '午餐时长',
-        '加班开始', '加班结束', '加班时长'
-    ])
+    writer.writerow(['日期', '用户名', '上班时间', '下班时间', '上班时长', '午餐开始', '午餐结束', '午餐时长', '加班开始', '加班结束', '加班时长'])
 
     for (username, date), types in grouped.items():
         上班 = types.get('上班打卡', '')
@@ -117,7 +110,6 @@ def export():
             午餐开始, 午餐结束, calc_hours(午餐开始, 午餐结束) if 午餐开始 and 午餐结束 else '',
             加班开始, 加班结束, calc_hours(加班开始, 加班结束) if 加班开始 and 加班结束 else ''
         ])
-
     output.seek(0)
     return send_file(io.BytesIO(output.getvalue().encode()),
                      mimetype='text/csv',
