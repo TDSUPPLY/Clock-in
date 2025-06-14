@@ -74,13 +74,49 @@ def attendance():
 def export():
     if 'username' not in session:
         return redirect('/login')
+
+    records = Attendance.query.order_by(Attendance.username, Attendance.date, Attendance.timestamp).all()
+
+    # 汇总结构：{(username, date): {type: time}}
+    from collections import defaultdict
+    grouped = defaultdict(dict)
+
+    for r in records:
+        key = (r.username, r.date)
+        grouped[key][r.type] = r.timestamp.strftime('%H:%M:%S')
+
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['ID', '用户名', '打卡类型', '日期时间'])
-    for entry in Attendance.query.order_by(Attendance.timestamp.desc()).all():
-        writer.writerow([entry.id, entry.username, entry.type, entry.timestamp])
+    writer.writerow(['日期', '用户名', '上班时间', '下班时间', '上班时长', '午餐开始', '午餐结束', '午餐时长', '加班开始', '加班结束', '加班时长'])
+
+    def calc_hours(start, end):
+        from datetime import datetime
+        fmt = '%H:%M:%S'
+        try:
+            delta = datetime.strptime(end, fmt) - datetime.strptime(start, fmt)
+            return round(delta.total_seconds() / 3600, 2)
+        except:
+            return ''
+
+    for (username, date), types in grouped.items():
+        上班 = types.get('上班打卡', '')
+        下班 = types.get('下班打卡', '')
+        午餐开始 = types.get('午餐开始', '')
+        午餐结束 = types.get('午餐结束', '')
+        加班开始 = types.get('加班开始', '')
+        加班结束 = types.get('加班结束', '')
+
+        writer.writerow([
+            date, username, 上班, 下班, calc_hours(上班, 下班) if 上班 and 下班 else '',
+            午餐开始, 午餐结束, calc_hours(午餐开始, 午餐结束) if 午餐开始 and 午餐结束 else '',
+            加班开始, 加班结束, calc_hours(加班开始, 加班结束) if 加班开始 and 加班结束 else ''
+        ])
+
     output.seek(0)
-    return send_file(io.BytesIO(output.getvalue().encode()), mimetype='text/csv', as_attachment=True, download_name='attendance.csv')
+    return send_file(io.BytesIO(output.getvalue().encode()),
+                     mimetype='text/csv',
+                     as_attachment=True,
+                     download_name='打卡记录汇总.csv')
 
 if __name__ == '__main__':
     with app.app_context():
