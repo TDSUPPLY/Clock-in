@@ -1,8 +1,10 @@
+
 from flask import Flask, render_template, request, redirect, session, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta
 import csv
 import io
+from collections import defaultdict
 
 app = Flask(__name__)
 app.secret_key = 'secret-key'
@@ -74,6 +76,14 @@ def attendance():
     db.session.commit()
     return jsonify({"message": f"{type} 打卡成功"})
 
+def calc_hours(start, end):
+    fmt = '%H:%M:%S'
+    try:
+        delta = datetime.strptime(end, fmt) - datetime.strptime(start, fmt)
+        return round(delta.total_seconds() / 3600, 2)
+    except:
+        return ''
+
 @app.route('/export')
 def export():
     if 'username' not in session:
@@ -81,26 +91,18 @@ def export():
 
     records = Attendance.query.order_by(Attendance.username, Attendance.date, Attendance.timestamp).all()
 
-    # 汇总结构：{(username, date): {type: time}}
-    from collections import defaultdict
     grouped = defaultdict(dict)
-
     for r in records:
         key = (r.username, r.date)
         grouped[key][r.type] = r.timestamp.strftime('%H:%M:%S')
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow([entry.id, entry.username, entry.type, entry.timestamp.strftime('%Y-%m-%d %H:%M:%S')])
-
-    def calc_hours(start, end):
-        from datetime import datetime
-        fmt = '%H:%M:%S'
-        try:
-            delta = datetime.strptime(end, fmt) - datetime.strptime(start, fmt)
-            return round(delta.total_seconds() / 3600, 2)
-        except:
-            return ''
+    writer.writerow([
+        '日期', '用户名', '上班时间', '下班时间', '上班时长',
+        '午餐开始', '午餐结束', '午餐时长',
+        '加班开始', '加班结束', '加班时长'
+    ])
 
     for (username, date), types in grouped.items():
         上班 = types.get('上班打卡', '')
