@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, session, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -23,12 +22,7 @@ class Attendance(db.Model):
     type = db.Column(db.String(50))
     date = db.Column(db.String(20))
 
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
-
-@app.route('/', methods=['GET'])
+@app.route('/')
 def home():
     if 'username' not in session:
         return redirect('/login')
@@ -51,7 +45,9 @@ def register():
         if not User.query.filter_by(username=username).first():
             db.session.add(User(username=username))
             db.session.commit()
-        return redirect('/login')
+            return redirect('/login')
+        else:
+            return "用户已存在，请返回重新输入"
     return render_template('register.html')
 
 @app.route('/logout')
@@ -62,7 +58,7 @@ def logout():
 @app.route('/api/attendance', methods=['POST'])
 def attendance():
     if 'username' not in session:
-        return jsonify({"error": "not logged in"}), 401
+        return jsonify({"error": "未登录"}), 401
     data = request.get_json()
     type = data['type']
     today = datetime.now().strftime('%Y-%m-%d')
