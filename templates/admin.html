@@ -1,20 +1,71 @@
-
 <!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
     <title>管理员后台</title>
     <style>
-        body { background: #000; color: #fff; font-family: Arial; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #555; padding: 8px; text-align: center; }
-        a { color: #0f0; }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        a {
+            color: #0f0;
+            margin-right: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #111;
+        }
+        th, td {
+            border: 1px solid #555;
+            padding: 10px;
+            text-align: center;
+        }
+        .type-上班打卡 { color: #00ff00; }
+        .type-下班打卡 { color: #ff4444; }
+        .type-午餐开始, .type-午餐结束 { color: #ffaa00; }
+        .type-加班开始, .type-加班结束 { color: #cc66ff; }
     </style>
 </head>
 <body>
-    <h2>管理员后台</h2>
-    <p>欢迎, {{ session['username'] }}（管理员）</p>
-    <p><a href="/admin/export">📁 导出月度打卡记录</a></p>
-    <p><a href="/">🔙 返回打卡页</a> | <a href="/logout">退出</a></p>
+    <h2>📊 管理员后台</h2>
+    <p>欢迎，<strong>{{ session['username'] }}</strong>（管理员）</p>
+
+    <p>
+        <a href="/admin/export">📁 导出月度打卡记录</a>
+        <a href="/">🔙 返回打卡页</a>
+        <a href="/logout">🚪 退出</a>
+    </p>
+
+    {% if records %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>用户名</th>
+                <th>打卡类型</th>
+                <th>日期</th>
+                <th>时间戳</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in records %}
+            <tr>
+                <td>{{ r.id }}</td>
+                <td>{{ r.username }}</td>
+                <td class="type-{{ r.type }}">{{ r.type }}</td>
+                <td>{{ r.date }}</td>
+                <td>{{ r.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>暂无打卡记录。</p>
+    {% endif %}
 </body>
 </html>
