@@ -16,12 +16,6 @@ class Attendance(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     type = db.Column(db.String(50))
 
-# ✅ 只在首次运行时自动创建数据库文件
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run()
-
 @app.route('/')
 def home():
     if 'username' not in session:
@@ -42,5 +36,8 @@ def record_attendance():
     db.session.commit()
     return jsonify({"message": f"{data['type']} 打卡成功"})
 
+# ✅ 部署时入口函数（自动创建数据库表）
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
