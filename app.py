@@ -17,10 +17,10 @@ class Attendance(db.Model):
     type = db.Column(db.String(50))
 
 # ✅ 只在首次运行时自动创建数据库文件
-@app.before_first_request
-def create_tables():
-    if not os.path.exists("app.db"):
+if __name__ == '__main__':
+    with app.app_context():
         db.create_all()
+    app.run()
 
 @app.route('/')
 def home():
