@@ -20,6 +20,7 @@
         </div>
         <div id="message" class="message"></div>
     </div>
+
     <script>
         function updateClock() {
             const now = new Date();
@@ -39,6 +40,44 @@
                 document.getElementById("message").innerText = data.message || data.error;
             });
         }
+
+        // ✅ 自动提醒功能
+        function showReminder(message) {
+            alert(message); // 或使用 SweetAlert 更美观
+        }
+
+        function scheduleReminders() {
+            const reminders = [
+                { time: "09:00", message: "记得打卡啦！上班打卡开始。" },
+                { time: "12:00", message: "午餐时间到啦！记得打卡午餐开始。" },
+                { time: "12:30", message: "午餐结束，记得打卡返回工作状态。" },
+                { time: "17:30", message: "下班时间到，记得打卡啦！" },
+                { time: "17:30", message: "开始加班了吗？记得打卡加班开始。" },
+                // 加班结束 = 手动
+            ];
+
+            const remindedToday = new Set();
+
+            setInterval(() => {
+                const now = new Date();
+                const current = now.toTimeString().slice(0, 5); // "HH:MM"
+
+                reminders.forEach(reminder => {
+                    const key = current + '-' + reminder.message;
+                    if (current === reminder.time && !remindedToday.has(key)) {
+                        showReminder(reminder.message);
+                        remindedToday.add(key);
+                    }
+                });
+
+                // 每天 00:00 清空提醒记录
+                if (current === '00:00') {
+                    remindedToday.clear();
+                }
+            }, 60000); // 每分钟检查一次
+        }
+
+        window.onload = scheduleReminders;
     </script>
 </body>
 </html>
