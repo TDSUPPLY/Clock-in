@@ -15,7 +15,7 @@ db = SQLAlchemy(app)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True)
-    is_admin = db.Column(db.Boolean, default=False)  # 管理员标记
+    is_admin = db.Column(db.Boolean, default=False)
 
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,6 +23,9 @@ class Attendance(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     type = db.Column(db.String(50))
     date = db.Column(db.String(20))
+
+def malaysia_now():
+    return datetime.utcnow() + timedelta(hours=8)
 
 @app.route('/')
 def home():
@@ -59,9 +62,6 @@ def logout():
     session.clear()
     return redirect('/login')
 
-def malaysia_now():
-    return datetime.utcnow() + timedelta(hours=8)
-
 @app.route('/api/attendance', methods=['POST'])
 def attendance():
     if 'username' not in session:
@@ -86,11 +86,14 @@ def admin_panel():
     return render_template('admin.html', records=records)
 
 @app.route('/admin/export')
+@app.route('/export')  # 添加别名兼容老链接
 def admin_export():
     if not session.get('is_admin'):
         return redirect('/')
+
     records = Attendance.query.order_by(Attendance.username, Attendance.date, Attendance.timestamp).all()
     grouped = defaultdict(dict)
+
     for r in records:
         key = (r.username, r.date)
         grouped[key][r.type] = r.timestamp.strftime('%H:%M:%S')
@@ -105,7 +108,9 @@ def admin_export():
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['日期', '用户名', '上班时间', '下班时间', '上班时长', '午餐开始', '午餐结束', '午餐时长', '加班开始', '加班结束', '加班时长'])
+    writer.writerow(['日期', '用户名', '上班时间', '下班时间', '上班时长',
+                     '午餐开始', '午餐结束', '午餐时长',
+                     '加班开始', '加班结束', '加班时长'])
 
     for (username, date), types in grouped.items():
         上班 = types.get('上班打卡', '')
@@ -120,11 +125,14 @@ def admin_export():
             午餐开始, 午餐结束, calc_hours(午餐开始, 午餐结束) if 午餐开始 and 午餐结束 else '',
             加班开始, 加班结束, calc_hours(加班开始, 加班结束) if 加班开始 and 加班结束 else ''
         ])
+
     output.seek(0)
-    return send_file(io.BytesIO(output.getvalue().encode()),
-                     mimetype='text/csv',
-                     as_attachment=True,
-                     download_name='考勤记录.csv')
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8-sig')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='考勤记录.csv'
+    )
 
 if __name__ == '__main__':
     with app.app_context():
