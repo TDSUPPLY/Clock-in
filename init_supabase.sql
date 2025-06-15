@@ -1,0 +1,14 @@
+-- 用户表
+CREATE TABLE IF NOT EXISTS "User" (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- 打卡记录表
+CREATE TABLE IF NOT EXISTS "Attendance" (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    timestamp TIMESTAMP DEFAULT NOW(),
+    type VARCHAR(50) NOT NULL,
+    date VARCHAR(20) NOT NULL
+);

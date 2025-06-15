@@ -1,4 +1,4 @@
-flask
-flask_sqlalchemy
-pandas
-openpyxl
+Flask
+Flask_SQLAlchemy
+python-dotenv
+psycopg2-binary
