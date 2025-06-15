@@ -1,14 +1,19 @@
 from flask import Flask, render_template, request, redirect, session, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 import csv
 import io
+import os
 from collections import defaultdict
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'secret-key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///attendance.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 class User(db.Model):
@@ -62,15 +67,10 @@ def malaysia_now():
 def attendance():
     if 'username' not in session:
         return jsonify({"error": "未登录"}), 401
-
     data = request.get_json()
     type = data['type']
     now = malaysia_now()
     today = now.strftime('%Y-%m-%d')
-    weekday = now.weekday()
-
-    if weekday == 6:
-        return jsonify({"error": "今天是星期日，不允许打卡"})
 
     if type in ['上班打卡', '午餐开始', '加班开始']:
         exists = Attendance.query.filter_by(username=session['username'], type=type, date=today).first()
@@ -151,7 +151,6 @@ def export():
         lunch_hours = calc_hours(午餐开始, 午餐结束)
         overtime_hours = calc_hours(加班开始, 加班结束)
         total_work_hours = round((work_hours or 0) - (lunch_hours or 0.5), 2) if work_hours else ''
-
         late_minutes = calc_minutes(get_expect_time(date, True), 上班) if 上班 else 0
         early_minutes = calc_minutes(下班, get_expect_time(date, False)) if 下班 else 0
         lunch_minutes = calc_minutes(午餐开始, 午餐结束)
