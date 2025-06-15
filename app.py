@@ -93,6 +93,14 @@ def export():
         except:
             return ''
 
+    def calc_minutes(start, end):
+        fmt = '%H:%M:%S'
+        try:
+            delta = datetime.strptime(end, fmt) - datetime.strptime(start, fmt)
+            return round(delta.total_seconds() / 60)
+        except:
+            return 0
+
     def calc_late_minutes(actual_time, expected_time='09:00:00'):
         try:
             actual = datetime.strptime(actual_time, '%H:%M:%S')
@@ -114,8 +122,8 @@ def export():
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(['日期', '用户名', '上班时间', '下班时间', '午餐开始', '午餐结束',
-                     '总工作时长(h)', '午餐时长(h)', '加班时长(h)', 
-                     '迟到时间(min)', '早退时间(min)', '异常次数'])
+                     '总工作时长(h)', '午餐时长(h)', '加班时长(h)',
+                     '迟到时间(min)', '早退时间(min)', '异常次数', '午餐超时(min)'])
 
     for (username, date), types in grouped.items():
         上班 = types.get('上班打卡', '')
@@ -131,6 +139,8 @@ def export():
         total_work_hours = round((work_hours or 0) - (lunch_hours or 0.5), 2) if work_hours else ''
         late_minutes = calc_late_minutes(上班)
         early_minutes = calc_early_leave_minutes(下班)
+        lunch_minutes = calc_minutes(午餐开始, 午餐结束)
+        lunch_overtime = max(lunch_minutes - 30, 0) if lunch_minutes else ''
         exception_count = 0
         if late_minutes >= 1: exception_count += 1
         if early_minutes >= 1: exception_count += 1
@@ -139,7 +149,7 @@ def export():
         writer.writerow([
             date, username, 上班, 下班, 午餐开始, 午餐结束,
             total_work_hours, lunch_hours, overtime_hours,
-            late_minutes, early_minutes, exception_count
+            late_minutes, early_minutes, exception_count, lunch_overtime
         ])
 
     output.seek(0)
