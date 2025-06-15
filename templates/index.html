@@ -42,6 +42,10 @@
     </div>
 
     <script>
+        let lunchStartTime = null;
+        let lunchReminder30 = null;
+        let lunchReminder40 = null;
+
         function updateClock() {
             const now = new Date();
             document.getElementById("clock").innerText = now.toLocaleString();
@@ -58,6 +62,27 @@
             .then(res => res.json())
             .then(data => {
                 document.getElementById("message").innerText = data.message || data.error || "请求失败";
+
+                if (type === '午餐开始') {
+                    if (lunchReminder30) clearTimeout(lunchReminder30);
+                    if (lunchReminder40) clearTimeout(lunchReminder40);
+
+                    lunchStartTime = new Date();
+
+                    lunchReminder30 = setTimeout(() => {
+                        alert("⏰ 午餐时间超过30分钟，记得打卡午餐结束！");
+                    }, 30 * 60 * 1000);
+
+                    lunchReminder40 = setTimeout(() => {
+                        alert("⚠️ 午餐已超过40分钟，属于超时，请尽快打卡结束！");
+                    }, 40 * 60 * 1000);
+                }
+
+                if (type === '午餐结束') {
+                    if (lunchReminder30) clearTimeout(lunchReminder30);
+                    if (lunchReminder40) clearTimeout(lunchReminder40);
+                    lunchStartTime = null;
+                }
             })
             .catch(err => {
                 document.getElementById("message").innerText = "网络错误，请稍后再试";
