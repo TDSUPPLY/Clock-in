@@ -62,11 +62,16 @@ def malaysia_now():
 def attendance():
     if 'username' not in session:
         return jsonify({"error": "未登录"}), 401
+
     data = request.get_json()
     type = data['type']
     now = malaysia_now()
     today = now.strftime('%Y-%m-%d')
-    
+    weekday = now.weekday()
+
+    if weekday == 6:
+        return jsonify({"error": "今天是星期日，不允许打卡"})
+
     if type in ['上班打卡', '午餐开始', '加班开始']:
         exists = Attendance.query.filter_by(username=session['username'], type=type, date=today).first()
         if exists:
@@ -77,7 +82,6 @@ def attendance():
         return jsonify({"message": f"{type} 打卡成功"})
 
     elif type in ['下班打卡', '午餐结束', '加班结束']:
-        # 删除旧的打卡记录，保留最新时间
         Attendance.query.filter_by(username=session['username'], type=type, date=today).delete()
         record = Attendance(username=session['username'], type=type, date=today, timestamp=now)
         db.session.add(record)
@@ -147,6 +151,7 @@ def export():
         lunch_hours = calc_hours(午餐开始, 午餐结束)
         overtime_hours = calc_hours(加班开始, 加班结束)
         total_work_hours = round((work_hours or 0) - (lunch_hours or 0.5), 2) if work_hours else ''
+
         late_minutes = calc_minutes(get_expect_time(date, True), 上班) if 上班 else 0
         early_minutes = calc_minutes(下班, get_expect_time(date, False)) if 下班 else 0
         lunch_minutes = calc_minutes(午餐开始, 午餐结束)
