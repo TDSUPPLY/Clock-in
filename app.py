@@ -66,13 +66,34 @@ def attendance():
     type = data['type']
     now = malaysia_now()
     today = now.strftime('%Y-%m-%d')
-    exists = Attendance.query.filter_by(username=session['username'], type=type, date=today).first()
-    if exists:
-        return jsonify({"message": f"{type} 已打卡"})
-    record = Attendance(username=session['username'], type=type, date=today, timestamp=now)
-    db.session.add(record)
-    db.session.commit()
-    return jsonify({"message": f"{type} 打卡成功"})
+    
+    if type in ['上班打卡', '午餐开始', '加班开始']:
+        exists = Attendance.query.filter_by(username=session['username'], type=type, date=today).first()
+        if exists:
+            return jsonify({"message": f"{type} 已打卡（首次记录为准）"})
+        record = Attendance(username=session['username'], type=type, date=today, timestamp=now)
+        db.session.add(record)
+        db.session.commit()
+        return jsonify({"message": f"{type} 打卡成功"})
+
+    elif type in ['下班打卡', '午餐结束', '加班结束']:
+        # 删除旧的打卡记录，保留最新时间
+        Attendance.query.filter_by(username=session['username'], type=type, date=today).delete()
+        record = Attendance(username=session['username'], type=type, date=today, timestamp=now)
+        db.session.add(record)
+        db.session.commit()
+
+        if type == '午餐结束':
+            lunch_start = Attendance.query.filter_by(username=session['username'], type='午餐开始', date=today).first()
+            if lunch_start:
+                duration = (now - lunch_start.timestamp).total_seconds() / 60
+                if duration > 40:
+                    return jsonify({"message": "午餐超时（超过40分钟）"})
+                elif duration > 30:
+                    return jsonify({"message": "午餐已超过30分钟，请尽快返回岗位"})
+        return jsonify({"message": f"{type} 打卡成功（记录以最后一次为准）"})
+
+    return jsonify({"error": "无效的打卡类型"}), 400
 
 @app.route('/export')
 def export():
@@ -101,23 +122,12 @@ def export():
         except:
             return 0
 
-    def calc_late_minutes(actual_time, expected_time='09:00:00'):
-        try:
-            actual = datetime.strptime(actual_time, '%H:%M:%S')
-            expected = datetime.strptime(expected_time, '%H:%M:%S')
-            delta = actual - expected
-            return max(round(delta.total_seconds() / 60), 0)
-        except:
-            return 0
-
-    def calc_early_leave_minutes(actual_time, expected_time='17:30:00'):
-        try:
-            actual = datetime.strptime(actual_time, '%H:%M:%S')
-            expected = datetime.strptime(expected_time, '%H:%M:%S')
-            delta = expected - actual
-            return max(round(delta.total_seconds() / 60), 0)
-        except:
-            return 0
+    def get_expect_time(date, is_start):
+        day = datetime.strptime(date, '%Y-%m-%d').weekday()
+        if is_start:
+            return '09:00:00'
+        else:
+            return '16:00:00' if day == 5 else '17:30:00'
 
     output = io.StringIO()
     writer = csv.writer(output)
@@ -137,10 +147,11 @@ def export():
         lunch_hours = calc_hours(午餐开始, 午餐结束)
         overtime_hours = calc_hours(加班开始, 加班结束)
         total_work_hours = round((work_hours or 0) - (lunch_hours or 0.5), 2) if work_hours else ''
-        late_minutes = calc_late_minutes(上班)
-        early_minutes = calc_early_leave_minutes(下班)
+        late_minutes = calc_minutes(get_expect_time(date, True), 上班) if 上班 else 0
+        early_minutes = calc_minutes(下班, get_expect_time(date, False)) if 下班 else 0
         lunch_minutes = calc_minutes(午餐开始, 午餐结束)
         lunch_overtime = max(lunch_minutes - 30, 0) if lunch_minutes else ''
+
         exception_count = 0
         if late_minutes >= 1: exception_count += 1
         if early_minutes >= 1: exception_count += 1
