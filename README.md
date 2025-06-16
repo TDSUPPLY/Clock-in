@@ -15,6 +15,10 @@
 - SQLAlchemy + python-dotenv
 - GitHub + Render 自动部署
 
-## ⚙️ 环境变量（.env）
+## ⚙️ 环境变量（`.env`）
+
+使用 Supabase 提供的 Transaction Pooler 连接方式，避免 Render 无法访问主机。
+
 ```env
-DATABASE_URL=postgresql://...
+# Supabase 数据库连接字符串（建议使用 Transaction Pooler）
+DATABASE_URL=postgresql://postgres.vsyfhmuobenltfjsuhag:TDSUPPLY202020@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres
