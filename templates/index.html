@@ -2,121 +2,63 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>员工打卡系统</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>员工登录 - Clock-in 系统</title>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            width: 300px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 30px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 90%;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            width: 100%;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .link {
+            display: block;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>员工打卡系统</h1>
-        <div class="welcome">欢迎, {{ username }} <a href="/logout">退出</a></div>
-        <div class="clock" id="clock"></div>
 
-        <div class="buttons">
-            <div class="btn-group">
-                <div class="btn-time">09:00</div>
-                <button class="btn green" onclick="punch('上班打卡')">上班打卡</button>
-            </div>
-            <div class="btn-group">
-                <div class="btn-time">12:00</div>
-                <button class="btn orange" onclick="punch('午餐开始')">午餐开始</button>
-            </div>
-            <div class="btn-group">
-                <div class="btn-time">12:30</div>
-                <button class="btn orange" onclick="punch('午餐结束')">午餐结束</button>
-            </div>
-            <div class="btn-group">
-                <div class="btn-time">17:30</div>
-                <button class="btn red" onclick="punch('下班打卡')">下班打卡</button>
-            </div>
-            <div class="btn-group">
-                <div class="btn-time">17:30</div>
-                <button class="btn purple" onclick="punch('加班开始')">加班开始</button>
-            </div>
-            <div class="btn-group">
-                <div class="btn-time">-</div>
-                <button class="btn purple" onclick="punch('加班结束')">加班结束</button>
-            </div>
-        </div>
+<div class="login-container">
+    <h2>员工打卡系统</h2>
+    <form method="post" action="/login">
+        <input type="text" name="username" placeholder="输入用户名" required>
+        <button class="btn" type="submit">登录</button>
+    </form>
+    <a href="/register" class="link">没有账号？点此注册</a>
+</div>
 
-        <div id="message" class="message"></div>
-    </div>
-
-    <script>
-        let lunchStartTime = null;
-        let lunchReminder30 = null;
-        let lunchReminder40 = null;
-
-        function updateClock() {
-            const now = new Date();
-            document.getElementById("clock").innerText = now.toLocaleString();
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        function punch(type) {
-            fetch('/api/attendance', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({type})
-            })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById("message").innerText = data.message || data.error || "请求失败";
-
-                if (type === '午餐开始') {
-                    if (lunchReminder30) clearTimeout(lunchReminder30);
-                    if (lunchReminder40) clearTimeout(lunchReminder40);
-
-                    lunchStartTime = new Date();
-
-                    lunchReminder30 = setTimeout(() => {
-                        alert("⏰ 午餐时间超过30分钟，记得打卡午餐结束！");
-                    }, 30 * 60 * 1000);
-
-                    lunchReminder40 = setTimeout(() => {
-                        alert("⚠️ 午餐已超过40分钟，属于超时，请尽快打卡结束！");
-                    }, 40 * 60 * 1000);
-                }
-
-                if (type === '午餐结束') {
-                    if (lunchReminder30) clearTimeout(lunchReminder30);
-                    if (lunchReminder40) clearTimeout(lunchReminder40);
-                    lunchStartTime = null;
-                }
-            })
-            .catch(err => {
-                document.getElementById("message").innerText = "网络错误，请稍后再试";
-            });
-        }
-
-        function showReminder(message) {
-            alert(message);
-        }
-
-        function scheduleReminders() {
-            const reminders = [
-                { time: "09:00", message: "记得打卡啦！上班打卡开始。" },
-                { time: "12:00", message: "午餐时间到啦！记得打卡午餐开始。" },
-                { time: "12:30", message: "午餐结束，记得打卡返回工作状态。" },
-                { time: "17:30", message: "下班时间到，记得打卡啦！" },
-                { time: "17:30", message: "开始加班了吗？记得打卡加班开始。" }
-            ];
-            const remindedToday = new Set();
-            setInterval(() => {
-                const now = new Date();
-                const current = now.toTimeString().slice(0, 5);
-                reminders.forEach(reminder => {
-                    const key = current + '-' + reminder.message;
-                    if (current === reminder.time && !remindedToday.has(key)) {
-                        showReminder(reminder.message);
-                        remindedToday.add(key);
-                    }
-                });
-                if (current === '00:00') remindedToday.clear();
-            }, 60000);
-        }
-
-        window.onload = scheduleReminders;
-    </script>
 </body>
 </html>
