@@ -168,4 +168,5 @@ def export():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    # 监听局域网所有IP访问，默认端口5000
+    app.run(host='0.0.0.0', port=5000)
