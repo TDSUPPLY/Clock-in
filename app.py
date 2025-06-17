@@ -1,25 +1,21 @@
 from flask import Flask, render_template, request, redirect, session, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
-import os, io, csv
 from collections import defaultdict
+import os, io, csv
 
-# √ 载入环境变量
-load_dotenv()
+# 本地数据库路径
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "clockin.db")
 
 app = Flask(__name__)
 app.secret_key = 'secret-key'
 
-# ✖ — 错误格式："=DATABASE_URI" 是错误的
-# √ 正确写法应为 "SQLALCHEMY_DATABASE_URI"
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
+# ✅ 改为 SQLite 本地数据库
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# √ 初始化 SQLAlchemy
 db = SQLAlchemy(app)
 
-# 表结构
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
@@ -33,7 +29,6 @@ class Attendance(db.Model):
     type = db.Column(db.String(50))
     date = db.Column(db.String(20))
 
-# 马来西亚当前时间
 def malaysia_now():
     return datetime.utcnow() + timedelta(hours=8)
 
@@ -105,10 +100,10 @@ def attendance_api():
                 elif dur > 31:
                     return jsonify({"message": "午餐超时（超过31分钟）", "alert": True})
                 elif dur > 30:
-                    return jsonify({"message": "午餐已超30分钟，请尽快返回实体", "alert": False})
+                    return jsonify({"message": "午餐已超过30分钟，请尽快返回岗位", "alert": False})
 
         if t == '下班打卡':
-            return jsonify({"message": "下班啦～今天辛苦啦 🎉", "alert": True})
+            return jsonify({"message": "下班咯～今天辛苦啦 🎉", "alert": True})
 
         return jsonify({"message": f"{t} 打卡成功（记录以最后一次为准）"})
 
@@ -173,5 +168,4 @@ def export():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(debug=True)
