@@ -2,63 +2,11 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>员工登录 - Clock-in 系统</title>
-    <style>
-        body {
-            font-family: "Microsoft YaHei", sans-serif;
-            background-color: #f7f7f7;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .login-container {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            width: 300px;
-            text-align: center;
-        }
-        h2 {
-            margin-bottom: 30px;
-        }
-        input[type="text"] {
-            padding: 10px;
-            width: 90%;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .btn {
-            padding: 10px 20px;
-            background: #007BFF;
-            color: white;
-            border: none;
-            width: 100%;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .btn:hover {
-            background: #0056b3;
-        }
-        .link {
-            display: block;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-    </style>
+    <title>打卡系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-
-<div class="login-container">
-    <h2>员工打卡系统</h2>
-    <form method="post" action="/login">
-        <input type="text" name="username" placeholder="输入用户名" required>
-        <button class="btn" type="submit">登录</button>
-    </form>
-    <a href="/register" class="link">没有账号？点此注册</a>
-</div>
-
+    欢迎 {{username}} 登录成功！
+    <a href="/logout">登出</a>
 </body>
 </html>
