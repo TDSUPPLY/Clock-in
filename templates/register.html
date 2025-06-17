@@ -2,63 +2,13 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>注册账号 - Clock-in 系统</title>
-    <style>
-        body {
-            font-family: "Microsoft YaHei", sans-serif;
-            background-color: #f2f2f2;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .register-container {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            width: 300px;
-            text-align: center;
-        }
-        h2 {
-            margin-bottom: 30px;
-        }
-        input[type="text"] {
-            padding: 10px;
-            width: 90%;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .btn {
-            padding: 10px 20px;
-            background: #28a745;
-            color: white;
-            border: none;
-            width: 100%;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .btn:hover {
-            background: #218838;
-        }
-        .link {
-            display: block;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-    </style>
+    <title>注册</title>
 </head>
 <body>
-
-<div class="register-container">
-    <h2>注册新用户</h2>
-    <form method="post" action="/register">
-        <input type="text" name="username" placeholder="设置用户名" required>
-        <button class="btn" type="submit">注册</button>
-    </form>
-    <a href="/login" class="link">已有账号？返回登录</a>
-</div>
-
+<form method="post">
+    新用户名：<input type="text" name="username">
+    <button type="submit">注册</button>
+    <a href="/login">返回登录</a>
+</form>
 </body>
 </html>
